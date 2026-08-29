@@ -1,6 +1,7 @@
 {
   "realm": "eventra",
   "enabled": true,
+  "sslRequired": "none",
   "registrationAllowed": true,
   "roles": {
     "realm": [

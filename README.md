@@ -19,3 +19,5 @@ mvn verify
 The gateway is intended for `http://localhost:8080`; service ports are 8081 through 8085. Kafka UI is at `http://localhost:8090`, and Keycloak is at `http://localhost:8180`. OpenAPI endpoints will be enabled per service as their API slices are implemented.
 
 See [docs/LOCAL_DEVELOPMENT.md](docs/LOCAL_DEVELOPMENT.md) for migration and reset commands.
+
+See [docs/API_DEVELOPER_GUIDE.md](docs/API_DEVELOPER_GUIDE.md) to browse all Swagger UIs, obtain a local access token, and call every service API.

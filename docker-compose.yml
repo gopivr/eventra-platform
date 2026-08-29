@@ -68,12 +68,25 @@ services:
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
       KC_BOOTSTRAP_ADMIN_PASSWORD: admin_local_only
-      KC_HOSTNAME: http://keycloak:8080
+      KC_HOSTNAME: http://localhost:8180
     volumes:
       [
         ./keycloak/realm-eventra.json:/opt/keycloak/data/import/realm-eventra.json:ro,
       ]
     ports: ["8180:8080"]
+    networks: [eventra]
+  keycloak-init:
+    image: quay.io/keycloak/keycloak:26.0
+    depends_on:
+      keycloak: { condition: service_started }
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        until /opt/keycloak/bin/kcadm.sh config credentials
+        --server http://keycloak:8080 --realm master
+        --user admin --password admin_local_only; do sleep 2; done;
+        /opt/keycloak/bin/kcadm.sh update realms/master -s sslRequired=NONE;
+        /opt/keycloak/bin/kcadm.sh update realms/eventra -s sslRequired=NONE
     networks: [eventra]
   kafka-init:
     image: apache/kafka:3.9.2
@@ -91,13 +104,14 @@ services:
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-eventra}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-eventra_local_only}
-      OIDC_ISSUER_URI: http://keycloak:8080/realms/eventra
+      OIDC_ISSUER_URI: http://localhost:8180/realms/eventra
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/eventra/protocol/openid-connect/certs
       IDENTITY_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-eventra}
     ports: ["8081:8081"]
     depends_on:
       {
         postgres: { condition: service_healthy },
-        keycloak: { condition: service_started },
+        keycloak-init: { condition: service_completed_successfully },
       }
     networks: [eventra]
   catalog-service:
@@ -105,13 +119,14 @@ services:
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-eventra}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-eventra_local_only}
-      OIDC_ISSUER_URI: http://keycloak:8080/realms/eventra
+      OIDC_ISSUER_URI: http://localhost:8180/realms/eventra
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/eventra/protocol/openid-connect/certs
       CATALOG_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-eventra}
     ports: ["8082:8082"]
     depends_on:
       {
         postgres: { condition: service_healthy },
-        keycloak: { condition: service_started },
+        keycloak-init: { condition: service_completed_successfully },
       }
     networks: [eventra]
   booking-service:
@@ -119,7 +134,8 @@ services:
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-eventra}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-eventra_local_only}
-      OIDC_ISSUER_URI: http://keycloak:8080/realms/eventra
+      OIDC_ISSUER_URI: http://localhost:8180/realms/eventra
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/eventra/protocol/openid-connect/certs
       BOOKING_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-eventra}
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       REDIS_URL: redis://redis:6379
@@ -129,7 +145,7 @@ services:
         postgres: { condition: service_healthy },
         redis: { condition: service_healthy },
         kafka-init: { condition: service_completed_successfully },
-        keycloak: { condition: service_started },
+        keycloak-init: { condition: service_completed_successfully },
       }
     networks: [eventra]
   payment-service:
@@ -137,7 +153,8 @@ services:
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-eventra}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-eventra_local_only}
-      OIDC_ISSUER_URI: http://keycloak:8080/realms/eventra
+      OIDC_ISSUER_URI: http://localhost:8180/realms/eventra
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/eventra/protocol/openid-connect/certs
       PAYMENT_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-eventra}
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       PAYMENT_WEBHOOK_SECRET: ${PAYMENT_WEBHOOK_SECRET:-local_webhook_secret}
@@ -146,7 +163,7 @@ services:
       {
         postgres: { condition: service_healthy },
         kafka-init: { condition: service_completed_successfully },
-        keycloak: { condition: service_started },
+        keycloak-init: { condition: service_completed_successfully },
       }
     networks: [eventra]
   engagement-service:
@@ -154,7 +171,8 @@ services:
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-eventra}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-eventra_local_only}
-      OIDC_ISSUER_URI: http://keycloak:8080/realms/eventra
+      OIDC_ISSUER_URI: http://localhost:8180/realms/eventra
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/eventra/protocol/openid-connect/certs
       ENGAGEMENT_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-eventra}
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
     ports: ["8085:8085"]
@@ -162,13 +180,14 @@ services:
       {
         postgres: { condition: service_healthy },
         kafka-init: { condition: service_completed_successfully },
-        keycloak: { condition: service_started },
+        keycloak-init: { condition: service_completed_successfully },
       }
     networks: [eventra]
   api-gateway:
     build: { context: ., args: { MODULE: api-gateway } }
     environment:
-      OIDC_ISSUER_URI: http://keycloak:8080/realms/eventra
+      OIDC_ISSUER_URI: http://localhost:8180/realms/eventra
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/eventra/protocol/openid-connect/certs
       REDIS_URL: redis://redis:6379
       IDENTITY_SERVICE_URL: http://identity-service:8081
       CATALOG_SERVICE_URL: http://catalog-service:8082

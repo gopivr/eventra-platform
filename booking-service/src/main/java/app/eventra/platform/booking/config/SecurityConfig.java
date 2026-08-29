@@ -21,7 +21,7 @@ public class SecurityConfig {
     return http.csrf(csrf -> csrf.disable())
         .authorizeHttpRequests(
             auth ->
-                auth.requestMatchers("/actuator/health")
+                auth.requestMatchers("/actuator/health", "/v3/api-docs/**", "/swagger-ui/**")
                     .permitAll()
                     .requestMatchers("/v1/events/*/check-ins")
                     .hasAnyRole("SCANNER", "EVENT_MANAGER", "ADMIN")

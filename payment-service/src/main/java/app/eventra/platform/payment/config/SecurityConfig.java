@@ -12,7 +12,11 @@ public class SecurityConfig {
     return http.csrf(c -> c.disable())
         .authorizeHttpRequests(
             a ->
-                a.requestMatchers("/actuator/health", "/v1/payments/webhooks/**")
+                a.requestMatchers(
+                        "/actuator/health",
+                        "/v3/api-docs/**",
+                        "/swagger-ui/**",
+                        "/v1/payments/webhooks/**")
                     .permitAll()
                     .anyRequest()
                     .authenticated())

@@ -11,7 +11,11 @@ public class SecurityConfig {
   public SecurityFilterChain security(HttpSecurity http) throws Exception {
     return http.csrf(c -> c.disable())
         .authorizeHttpRequests(
-            a -> a.requestMatchers("/actuator/health").permitAll().anyRequest().authenticated())
+            a ->
+                a.requestMatchers("/actuator/health", "/v3/api-docs/**", "/swagger-ui/**")
+                    .permitAll()
+                    .anyRequest()
+                    .authenticated())
         .oauth2ResourceServer(o -> o.jwt(j -> {}))
         .build();
   }
