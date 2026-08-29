@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - changeSet:
+      id: payment-1.0-004-reference-data
+      author: eventra
+      changes:
+        - sql:
+            sql: INSERT INTO ${schemaName}.ledger_account (id, account_code, currency, account_type) VALUES ('00000000-0000-0000-0000-000000000201','PLATFORM_CASH','INR','ASSET'), ('00000000-0000-0000-0000-000000000202','PLATFORM_COMMISSION','INR','REVENUE') ON CONFLICT (account_code) DO NOTHING;

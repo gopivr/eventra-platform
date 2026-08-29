@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - changeSet:
+      id: booking-1.0-004-reference-data
+      author: eventra
+      changes:
+        - sql:
+            sql: SELECT 1;

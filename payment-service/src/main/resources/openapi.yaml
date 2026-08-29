@@ -1,0 +1,103 @@
+openapi: 3.1.0
+info:
+  title: Eventra Payment API
+  version: 1.0.0
+paths:
+  /v1/pricing/quotes:
+    post:
+      operationId: createPricingQuote
+      responses:
+        "200": { description: Server calculated quote }
+  /v1/payment-intents:
+    post:
+      operationId: createPaymentIntent
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - {
+            name: Idempotency-Key,
+            in: header,
+            required: true,
+            schema: { type: string },
+          }
+      responses:
+        "200": { description: Payment intent }
+  /v1/payment-intents/{id}/capture:
+    post:
+      operationId: capturePayment
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: Captured payment }
+  /v1/refunds:
+    post:
+      operationId: requestRefund
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - {
+            name: Idempotency-Key,
+            in: header,
+            required: true,
+            schema: { type: string },
+          }
+      responses:
+        "202": { description: Refund accepted }
+  /v1/payments/webhooks/{provider}:
+    post:
+      operationId: receiveProviderWebhook
+      parameters:
+        - {
+            name: X-Provider-Event-Id,
+            in: header,
+            required: true,
+            schema: { type: string },
+          }
+        - {
+            name: X-Webhook-Signature,
+            in: header,
+            required: true,
+            schema: { type: string },
+          }
+        - {
+            name: X-Webhook-Timestamp,
+            in: header,
+            required: true,
+            schema: { type: integer },
+          }
+      responses:
+        "202": { description: Webhook accepted }
+        "400":
+          { description: Invalid, malformed, or expired provider signature }
+  /v1/ledger/journal-entries:
+    post:
+      operationId: postJournalEntry
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: Balanced journal entry posted }
+        "400": { description: Journal is unbalanced or mixes currencies }
+  /v1/settlements:
+    post:
+      operationId: createSettlement
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: Settlement created from posted journals }
+  /v1/settlements/{id}/payouts:
+    post:
+      operationId: requestPayout
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - {
+            name: Idempotency-Key,
+            in: header,
+            required: true,
+            schema: { type: string },
+          }
+      responses:
+        "200": { description: Idempotent provider payout submitted }
+  /v1/internal/reconciliation-runs:
+    post:
+      operationId: runProviderReconciliation
+      security: [{ bearerAuth: [] }]
+      responses:
+        "202": { description: Provider reconciliation completed }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }

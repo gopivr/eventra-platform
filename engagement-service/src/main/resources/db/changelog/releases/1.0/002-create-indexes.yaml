@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - changeSet:
+      id: engagement-1.0-002-indexes
+      author: eventra
+      changes:
+        - sql:
+            sql: |
+              CREATE INDEX notification_user_unread_idx ON ${schemaName}.notification(user_id, created_at DESC) WHERE read_at IS NULL;
+              CREATE INDEX notification_delivery_retry_idx ON ${schemaName}.notification_delivery(next_attempt_at) WHERE status = 'RETRY';
+              CREATE INDEX support_case_requester_idx ON ${schemaName}.support_case(requester_user_id, updated_at DESC);
+              CREATE INDEX dispute_reference_idx ON ${schemaName}.dispute(booking_id, payment_id);

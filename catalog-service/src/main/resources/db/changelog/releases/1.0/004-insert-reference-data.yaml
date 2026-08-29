@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - changeSet:
+      id: catalog-1.0-004-reference-data
+      author: eventra
+      changes:
+        - sql:
+            sql: INSERT INTO ${schemaName}.venue_amenity (id, code, display_name) VALUES ('00000000-0000-0000-0000-000000000101','PARKING','Parking'), ('00000000-0000-0000-0000-000000000102','WIFI','Wi-Fi') ON CONFLICT (code) DO NOTHING;

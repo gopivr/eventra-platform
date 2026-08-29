@@ -1,0 +1,25 @@
+databaseChangeLog:
+  - property:
+      name: identitySchema
+      value: eventra_identity
+      dbms: postgresql
+  - property:
+      name: catalogSchema
+      value: eventra_catalog
+      dbms: postgresql
+  - property:
+      name: bookingSchema
+      value: eventra_booking
+      dbms: postgresql
+  - property:
+      name: paymentSchema
+      value: eventra_payment
+      dbms: postgresql
+  - property:
+      name: engagementSchema
+      value: eventra_engagement
+      dbms: postgresql
+  - include:
+      file: db/provision-schemas.yaml
+  - include:
+      file: db/service-changelogs.yaml

@@ -1,0 +1,12 @@
+spring:
+  application.name: booking-service
+  jpa.hibernate.ddl-auto: validate
+  datasource.url: ${BOOKING_DB_URL:jdbc:postgresql://localhost:5432/eventra}
+  datasource.username: ${POSTGRES_USER:eventra}
+  datasource.password: ${POSTGRES_PASSWORD:eventra_local_only}
+  liquibase.change-log: classpath:db/changelog/db.changelog-master.yaml
+  data.redis.url: ${REDIS_URL:redis://localhost:6379}
+  kafka.bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+  security.oauth2.resourceserver.jwt.issuer-uri: ${OIDC_ISSUER_URI:http://localhost:8180/realms/eventra}
+server.port: ${SERVER_PORT:8083}
+management.endpoints.web.exposure.include: health,info

@@ -1,0 +1,3 @@
+databaseChangeLog:
+  - include: { file: 001-create-review-moderation-history.yaml, relativeToChangelogFile: true }
+  - include: { file: 002-align-character-column-types.yaml, relativeToChangelogFile: true }

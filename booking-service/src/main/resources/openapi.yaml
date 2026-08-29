@@ -1,0 +1,180 @@
+openapi: 3.1.0
+info: { title: Eventra Booking API, version: 1.0.0 }
+paths:
+  /v1/seat-holds:
+    post:
+      {
+        operationId: createSeatHold,
+        security: [{ bearerAuth: [] }],
+        parameters:
+          [{ name: Idempotency-Key, in: header, schema: { type: string } }],
+        responses:
+          {
+            "201": { description: Hold created },
+            "409": { description: Seat unavailable },
+          },
+      }
+  /v1/ticket-orders:
+    post:
+      {
+        operationId: createTicketOrder,
+        security: [{ bearerAuth: [] }],
+        parameters:
+          [
+            {
+              name: Idempotency-Key,
+              in: header,
+              required: true,
+              schema: { type: string },
+            },
+          ],
+        responses: { "201": { description: Order created } },
+      }
+  /v1/seat-holds/{id}:
+    delete:
+      {
+        operationId: releaseSeatHold,
+        security: [{ bearerAuth: [] }],
+        responses: { "204": { description: Hold released } },
+      }
+  /v1/ticket-orders/{id}:
+    get:
+      {
+        operationId: getTicketOrder,
+        security: [{ bearerAuth: [] }],
+        responses:
+          { "200": { description: Order }, "404": { description: Not found } },
+      }
+  /v1/events/{eventId}/check-ins:
+    post:
+      {
+        operationId: checkInTicket,
+        security: [{ bearerAuth: [] }],
+        responses:
+          {
+            "200": { description: Check-in recorded },
+            "400": { description: Invalid credential },
+            "403": { description: Scanner role required },
+          },
+      }
+  /v1/ticket-orders/{id}/tickets:
+    get:
+      {
+        operationId: listIssuedTickets,
+        security: [{ bearerAuth: [] }],
+        responses:
+          {
+            "200": { description: Issued tickets },
+            "403": { description: Order owner required },
+          },
+      }
+  /v1/tickets/{id}/assignment:
+    put:
+      {
+        operationId: assignTicket,
+        security: [{ bearerAuth: [] }],
+        responses:
+          {
+            "200": { description: Ticket assigned },
+            "403": { description: Order owner required },
+          },
+      }
+  /v1/tickets/{id}/credential-rotations:
+    post:
+      {
+        operationId: rotateAdmissionCredential,
+        security: [{ bearerAuth: [] }],
+        responses:
+          {
+            "200": { description: New one-time admission credential },
+            "403": { description: Order owner required },
+          },
+      }
+  /v1/invitations:
+    post:
+      {
+        operationId: createInvitation,
+        security: [{ bearerAuth: [] }],
+        responses: { "201": { description: Invitation created } },
+      }
+  /v1/invitations/{id}/responses:
+    post:
+      {
+        operationId: respondToInvitation,
+        security: [{ bearerAuth: [] }],
+        responses: { "204": { description: Response recorded } },
+      }
+  /v1/service-requests:
+    post:
+      {
+        operationId: createServiceRequest,
+        security: [{ bearerAuth: [] }],
+        responses: { "201": { description: Request created } },
+      }
+  /v1/service-requests/{id}/quotes:
+    post:
+      {
+        operationId: submitQuote,
+        security: [{ bearerAuth: [] }],
+        responses: { "201": { description: Quote submitted } },
+      }
+  /v1/service-requests/{id}/quote-selection:
+    post:
+      {
+        operationId: selectQuote,
+        security: [{ bearerAuth: [] }],
+        responses: { "201": { description: Service booking created } },
+      }
+  /v1/service-bookings/{id}/acceptance:
+    post:
+      {
+        operationId: acceptServiceBooking,
+        security: [{ bearerAuth: [] }],
+        responses: { "204": { description: Booking accepted } },
+      }
+  /v1/service-bookings/{id}/decline:
+    post:
+      {
+        operationId: declineServiceBooking,
+        security: [{ bearerAuth: [] }],
+        responses: { "204": { description: Booking declined } },
+      }
+  /v1/service-bookings/{id}/cancellations:
+    post:
+      {
+        operationId: cancelServiceBooking,
+        security: [{ bearerAuth: [] }],
+        responses: { "202": { description: Cancellation accepted } },
+      }
+  /v1/ticket-orders/{id}/cancellations:
+    post:
+      {
+        operationId: cancelTicketOrder,
+        security: [{ bearerAuth: [] }],
+        responses: { "202": { description: Cancellation accepted } },
+      }
+  /v1/providers/me/availability:
+    get:
+      {
+        operationId: listProviderAvailability,
+        security: [{ bearerAuth: [] }],
+        responses: { "200": { description: Availability blocks } },
+      }
+  /v1/providers/me/availability-blocks:
+    post:
+      {
+        operationId: createAvailabilityBlock,
+        security: [{ bearerAuth: [] }],
+        responses: { "201": { description: Availability block created } },
+      }
+  /v1/internal/ticket-orders/{id}/issuance:
+    post:
+      {
+        operationId: issueTickets,
+        responses: { "200": { description: Tickets issued } },
+      }
+components:
+  {
+    securitySchemes:
+      { bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT } },
+  }

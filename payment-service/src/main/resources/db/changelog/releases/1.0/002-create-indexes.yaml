@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: payment-1.0-002-indexes
+      author: eventra
+      changes:
+        - sql:
+            sql: |
+              CREATE INDEX payment_intent_order_idx ON ${schemaName}.payment_intent(order_reference);
+              CREATE INDEX payment_attempt_intent_idx ON ${schemaName}.payment_attempt(payment_intent_id, attempted_at DESC);
+              CREATE INDEX refund_status_idx ON ${schemaName}.refund(status, requested_at);
+              CREATE INDEX journal_line_account_idx ON ${schemaName}.journal_line(ledger_account_id);
+              CREATE INDEX payout_status_idx ON ${schemaName}.payout(status, requested_at);

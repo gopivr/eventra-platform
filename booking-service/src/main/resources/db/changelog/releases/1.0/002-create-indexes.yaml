@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: booking-1.0-002-indexes
+      author: eventra
+      changes:
+        - sql:
+            sql: |
+              CREATE UNIQUE INDEX inventory_seat_active_idx ON ${schemaName}.inventory_allocation(seat_id) WHERE seat_id IS NOT NULL AND state IN ('HELD','SOLD');
+              CREATE INDEX seat_hold_expiry_idx ON ${schemaName}.seat_hold(expires_at) WHERE status = 'ACTIVE';
+              CREATE INDEX ticket_order_user_idx ON ${schemaName}.ticket_order(user_id, created_at DESC);
+              CREATE INDEX ticket_order_status_idx ON ${schemaName}.ticket(order_id, status);
+              CREATE INDEX service_request_state_idx ON ${schemaName}.service_request(state, expires_at);

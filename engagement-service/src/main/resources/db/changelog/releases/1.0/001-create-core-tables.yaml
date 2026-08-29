@@ -1,0 +1,16 @@
+databaseChangeLog:
+  - changeSet:
+      id: engagement-1.0-001-core
+      author: eventra
+      changes:
+        - sql:
+            sql: |
+              CREATE TABLE ${schemaName}.notification (id UUID PRIMARY KEY, user_id UUID NOT NULL, notification_type VARCHAR(80) NOT NULL, title VARCHAR(240) NOT NULL, body TEXT NOT NULL, resource_type VARCHAR(80), resource_id VARCHAR(100), read_at TIMESTAMP WITH TIME ZONE, created_at TIMESTAMP WITH TIME ZONE NOT NULL);
+              CREATE TABLE ${schemaName}.notification_delivery (id UUID PRIMARY KEY, notification_id UUID NOT NULL REFERENCES ${schemaName}.notification(id), channel VARCHAR(20) NOT NULL, status VARCHAR(30) NOT NULL, attempt_count INTEGER NOT NULL DEFAULT 0, next_attempt_at TIMESTAMP WITH TIME ZONE, last_error VARCHAR(1000), delivered_at TIMESTAMP WITH TIME ZONE);
+              CREATE TABLE ${schemaName}.communication_preference (user_id UUID PRIMARY KEY, in_app_enabled BOOLEAN NOT NULL DEFAULT TRUE, email_enabled BOOLEAN NOT NULL DEFAULT TRUE, sms_enabled BOOLEAN NOT NULL DEFAULT FALSE, push_enabled BOOLEAN NOT NULL DEFAULT FALSE, updated_at TIMESTAMP WITH TIME ZONE NOT NULL);
+              CREATE TABLE ${schemaName}.saved_item (user_id UUID NOT NULL, item_type VARCHAR(30) NOT NULL, item_id VARCHAR(100) NOT NULL, created_at TIMESTAMP WITH TIME ZONE NOT NULL, PRIMARY KEY (user_id, item_type, item_id));
+              CREATE TABLE ${schemaName}.support_case (id UUID PRIMARY KEY, requester_user_id UUID NOT NULL, status VARCHAR(30) NOT NULL, subject VARCHAR(240) NOT NULL, created_at TIMESTAMP WITH TIME ZONE NOT NULL, updated_at TIMESTAMP WITH TIME ZONE NOT NULL);
+              CREATE TABLE ${schemaName}.support_case_message (id UUID PRIMARY KEY, case_id UUID NOT NULL REFERENCES ${schemaName}.support_case(id), author_user_id UUID NOT NULL, body TEXT NOT NULL, created_at TIMESTAMP WITH TIME ZONE NOT NULL);
+              CREATE TABLE ${schemaName}.dispute (id UUID PRIMARY KEY, opened_by_user_id UUID NOT NULL, booking_id VARCHAR(100) NOT NULL, payment_id VARCHAR(100) NOT NULL, status VARCHAR(30) NOT NULL, reason VARCHAR(500) NOT NULL, created_at TIMESTAMP WITH TIME ZONE NOT NULL);
+              CREATE TABLE ${schemaName}.dispute_status_history (id UUID PRIMARY KEY, dispute_id UUID NOT NULL REFERENCES ${schemaName}.dispute(id), from_status VARCHAR(30), to_status VARCHAR(30) NOT NULL, changed_at TIMESTAMP WITH TIME ZONE NOT NULL);
+              CREATE TABLE ${schemaName}.dispute_evidence (id UUID PRIMARY KEY, dispute_id UUID NOT NULL REFERENCES ${schemaName}.dispute(id), object_storage_key VARCHAR(500) NOT NULL, content_type VARCHAR(100) NOT NULL, created_at TIMESTAMP WITH TIME ZONE NOT NULL);

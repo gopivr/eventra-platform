@@ -1,0 +1,2 @@
+databaseChangeLog:
+  - include: { file: 001-align-character-column-types.yaml, relativeToChangelogFile: true }

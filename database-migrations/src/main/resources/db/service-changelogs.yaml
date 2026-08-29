@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - include:
+      file: db/services/identity/db.changelog-master.yaml
+  - include:
+      file: db/services/catalog/db.changelog-master.yaml
+  - include:
+      file: db/services/booking/db.changelog-master.yaml
+  - include:
+      file: db/services/payment/db.changelog-master.yaml
+  - include:
+      file: db/services/engagement/db.changelog-master.yaml

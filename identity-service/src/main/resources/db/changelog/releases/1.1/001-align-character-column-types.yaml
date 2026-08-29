@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: identity-1.1-001-align-character-column-types
+      author: eventra
+      changes:
+        - sql:
+            sql: |
+              ALTER TABLE ${schemaName}.address ALTER COLUMN country_code TYPE VARCHAR(2);

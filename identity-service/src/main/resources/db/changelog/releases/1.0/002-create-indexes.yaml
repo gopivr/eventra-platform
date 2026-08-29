@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: identity-1.0-002-indexes
+      author: eventra
+      changes:
+        - sql:
+            sql: |
+              CREATE INDEX user_identity_user_idx ON ${schemaName}.user_identity(user_id);
+              CREATE INDEX user_role_role_idx ON ${schemaName}.user_role(role_id);
+              CREATE INDEX organization_member_user_idx ON ${schemaName}.organization_member(user_id);
+              CREATE INDEX verification_case_user_status_idx ON ${schemaName}.verification_case(user_id, status);
+              CREATE INDEX audit_event_resource_idx ON ${schemaName}.audit_event(resource_type, resource_id, occurred_at DESC);

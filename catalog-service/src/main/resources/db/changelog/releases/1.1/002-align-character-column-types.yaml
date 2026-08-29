@@ -1,0 +1,10 @@
+databaseChangeLog:
+  - changeSet:
+      id: catalog-1.1-002-align-character-column-types
+      author: eventra
+      changes:
+        - sql:
+            sql: |
+              ALTER TABLE ${schemaName}.event_location ALTER COLUMN country_code TYPE VARCHAR(2);
+              ALTER TABLE ${schemaName}.provider_service ALTER COLUMN currency TYPE VARCHAR(3);
+              ALTER TABLE ${schemaName}.service_package ALTER COLUMN currency TYPE VARCHAR(3);

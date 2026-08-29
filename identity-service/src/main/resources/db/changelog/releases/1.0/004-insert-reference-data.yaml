@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: identity-1.0-004-reference-data
+      author: eventra
+      changes:
+        - sql:
+            sql: |
+              INSERT INTO ${schemaName}.role (id, code, display_name) VALUES ('00000000-0000-0000-0000-000000000001','CUSTOMER','Customer'), ('00000000-0000-0000-0000-000000000002','ORGANIZER','Organizer'), ('00000000-0000-0000-0000-000000000003','PROVIDER','Provider'), ('00000000-0000-0000-0000-000000000004','ADMIN','Administrator') ON CONFLICT (code) DO NOTHING;

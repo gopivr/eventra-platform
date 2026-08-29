@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?><project xmlns="http://maven.apache.org/POM/4.0.0">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>app.eventra</groupId>
+        <artifactId>eventra-platform</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>database-migrations</artifactId>
+    <dependencies>
+        <dependency>
+            <groupId>org.liquibase</groupId>
+            <artifactId>liquibase-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency><groupId>org.yaml</groupId><artifactId>snakeyaml</artifactId><scope>test</scope></dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-service-changelogs</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.outputDirectory}/db/services</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}/../identity-service/src/main/resources/db/changelog</directory>
+                                    <targetPath>identity</targetPath>
+                                </resource>
+                                <resource>
+                                    <directory>${project.basedir}/../catalog-service/src/main/resources/db/changelog</directory>
+                                    <targetPath>catalog</targetPath>
+                                </resource>
+                                <resource>
+                                    <directory>${project.basedir}/../booking-service/src/main/resources/db/changelog</directory>
+                                    <targetPath>booking</targetPath>
+                                </resource>
+                                <resource>
+                                    <directory>${project.basedir}/../payment-service/src/main/resources/db/changelog</directory>
+                                    <targetPath>payment</targetPath>
+                                </resource>
+                                <resource>
+                                    <directory>${project.basedir}/../engagement-service/src/main/resources/db/changelog</directory>
+                                    <targetPath>engagement</targetPath>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>specialize-service-schema-properties</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <replace dir="${project.build.outputDirectory}/db/services/identity" token="$${schemaName}" value="eventra_identity">
+                                    <include name="**/*.yaml"/>
+                                </replace>
+                                <replace dir="${project.build.outputDirectory}/db/services/catalog" token="$${schemaName}" value="eventra_catalog">
+                                    <include name="**/*.yaml"/>
+                                </replace>
+                                <replace dir="${project.build.outputDirectory}/db/services/booking" token="$${schemaName}" value="eventra_booking">
+                                    <include name="**/*.yaml"/>
+                                </replace>
+                                <replace dir="${project.build.outputDirectory}/db/services/payment" token="$${schemaName}" value="eventra_payment">
+                                    <include name="**/*.yaml"/>
+                                </replace>
+                                <replace dir="${project.build.outputDirectory}/db/services/engagement" token="$${schemaName}" value="eventra_engagement">
+                                    <include name="**/*.yaml"/>
+                                </replace>
+                            </target>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

@@ -1,0 +1,193 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-eventra}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-eventra_local_only}
+      POSTGRES_DB: ${POSTGRES_DB:-eventra}
+    ports: ["5432:5432"]
+    volumes: [eventra-postgres:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    networks: [eventra]
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+    volumes: [eventra-redis:/data]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    networks: [eventra]
+  kafka:
+    image: apache/kafka:3.9.2
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: controller,broker
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LISTENERS: INTERNAL://:29092,EXTERNAL://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      CLUSTER_ID: 4L6g3nShT-eMCtK--X86sw
+    ports: ["9092:9092"]
+    volumes: [eventra-kafka:/var/lib/kafka/data]
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "/opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list >/dev/null 2>&1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    networks: [eventra]
+  kafka-ui:
+    image: provectuslabs/kafka-ui:v0.7.2
+    environment:
+      KAFKA_CLUSTERS_0_NAME: eventra-local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+    ports: ["8090:8080"]
+    depends_on:
+      kafka: { condition: service_healthy }
+    networks: [eventra]
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    command: start-dev --import-realm
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin_local_only
+      KC_HOSTNAME: http://keycloak:8080
+    volumes:
+      [
+        ./keycloak/realm-eventra.json:/opt/keycloak/data/import/realm-eventra.json:ro,
+      ]
+    ports: ["8180:8080"]
+    networks: [eventra]
+  kafka-init:
+    image: apache/kafka:3.9.2
+    depends_on:
+      kafka: { condition: service_healthy }
+    command:
+      [
+        "sh",
+        "-c",
+        "for topic in eventra.payment eventra.payment.DLQ eventra.booking eventra.booking.DLQ; do /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:29092 --create --if-not-exists --topic $$topic --partitions 3 --replication-factor 1; done",
+      ]
+    networks: [eventra]
+  identity-service:
+    build: { context: ., args: { MODULE: identity-service } }
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-eventra}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-eventra_local_only}
+      OIDC_ISSUER_URI: http://keycloak:8080/realms/eventra
+      IDENTITY_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-eventra}
+    ports: ["8081:8081"]
+    depends_on:
+      {
+        postgres: { condition: service_healthy },
+        keycloak: { condition: service_started },
+      }
+    networks: [eventra]
+  catalog-service:
+    build: { context: ., args: { MODULE: catalog-service } }
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-eventra}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-eventra_local_only}
+      OIDC_ISSUER_URI: http://keycloak:8080/realms/eventra
+      CATALOG_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-eventra}
+    ports: ["8082:8082"]
+    depends_on:
+      {
+        postgres: { condition: service_healthy },
+        keycloak: { condition: service_started },
+      }
+    networks: [eventra]
+  booking-service:
+    build: { context: ., args: { MODULE: booking-service } }
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-eventra}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-eventra_local_only}
+      OIDC_ISSUER_URI: http://keycloak:8080/realms/eventra
+      BOOKING_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-eventra}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      REDIS_URL: redis://redis:6379
+    ports: ["8083:8083"]
+    depends_on:
+      {
+        postgres: { condition: service_healthy },
+        redis: { condition: service_healthy },
+        kafka-init: { condition: service_completed_successfully },
+        keycloak: { condition: service_started },
+      }
+    networks: [eventra]
+  payment-service:
+    build: { context: ., args: { MODULE: payment-service } }
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-eventra}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-eventra_local_only}
+      OIDC_ISSUER_URI: http://keycloak:8080/realms/eventra
+      PAYMENT_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-eventra}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      PAYMENT_WEBHOOK_SECRET: ${PAYMENT_WEBHOOK_SECRET:-local_webhook_secret}
+    ports: ["8084:8084"]
+    depends_on:
+      {
+        postgres: { condition: service_healthy },
+        kafka-init: { condition: service_completed_successfully },
+        keycloak: { condition: service_started },
+      }
+    networks: [eventra]
+  engagement-service:
+    build: { context: ., args: { MODULE: engagement-service } }
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-eventra}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-eventra_local_only}
+      OIDC_ISSUER_URI: http://keycloak:8080/realms/eventra
+      ENGAGEMENT_DB_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-eventra}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    ports: ["8085:8085"]
+    depends_on:
+      {
+        postgres: { condition: service_healthy },
+        kafka-init: { condition: service_completed_successfully },
+        keycloak: { condition: service_started },
+      }
+    networks: [eventra]
+  api-gateway:
+    build: { context: ., args: { MODULE: api-gateway } }
+    environment:
+      OIDC_ISSUER_URI: http://keycloak:8080/realms/eventra
+      REDIS_URL: redis://redis:6379
+      IDENTITY_SERVICE_URL: http://identity-service:8081
+      CATALOG_SERVICE_URL: http://catalog-service:8082
+      BOOKING_SERVICE_URL: http://booking-service:8083
+      PAYMENT_SERVICE_URL: http://payment-service:8084
+      ENGAGEMENT_SERVICE_URL: http://engagement-service:8085
+    ports: ["8080:8080"]
+    depends_on:
+      redis: { condition: service_healthy }
+      identity-service: { condition: service_started }
+      catalog-service: { condition: service_started }
+      booking-service: { condition: service_started }
+      payment-service: { condition: service_started }
+      engagement-service: { condition: service_started }
+    networks: [eventra]
+volumes:
+  eventra-postgres:
+  eventra-redis:
+  eventra-kafka:
+networks:
+  eventra:
+    name: eventra-local

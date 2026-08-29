@@ -1,0 +1,13 @@
+databaseChangeLog:
+  - changeSet:
+      id: catalog-1.0-002-indexes
+      author: eventra
+      changes:
+        - sql:
+            sql: |
+              CREATE INDEX event_public_search_idx ON ${schemaName}.event(starts_at, location_id) WHERE status = 'PUBLISHED' AND visibility = 'PUBLIC';
+              CREATE INDEX event_location_city_idx ON ${schemaName}.event_location(city, event_id);
+              CREATE INDEX event_organizer_idx ON ${schemaName}.event(organizer_organization_id, status);
+              CREATE INDEX venue_city_active_idx ON ${schemaName}.venue(city) WHERE status = 'ACTIVE';
+              CREATE INDEX provider_active_idx ON ${schemaName}.provider_profile(verification_status) WHERE active = TRUE;
+              CREATE INDEX review_provider_idx ON ${schemaName}.review(provider_id, created_at DESC);

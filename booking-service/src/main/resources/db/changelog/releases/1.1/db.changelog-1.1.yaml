@@ -1,0 +1,2 @@
+databaseChangeLog:
+  - include: { file: 001-ticket-assignment-fields.yaml, relativeToChangelogFile: true }

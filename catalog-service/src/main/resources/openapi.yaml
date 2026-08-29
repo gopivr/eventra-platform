@@ -1,0 +1,183 @@
+openapi: 3.1.0
+info:
+  title: Eventra Catalog API
+  version: 1.0.0
+paths:
+  /v1/events:
+    get:
+      operationId: discoverEvents
+      parameters: [{ name: city, in: query, schema: { type: string } }]
+      responses: { "200": { description: Published public events } }
+    post:
+      operationId: createEvent
+      security: [{ bearerAuth: [] }]
+      responses:
+        {
+          "201": { description: Event created },
+          "422": { description: Validation failure },
+        }
+  /v1/events/{id}:
+    get:
+      operationId: getEvent
+      parameters:
+        [
+          {
+            name: id,
+            in: path,
+            required: true,
+            schema: { type: string, format: uuid },
+          },
+        ]
+      responses:
+        { "200": { description: Event }, "404": { description: Not found } }
+    put:
+      operationId: updateEvent
+      security: [{ bearerAuth: [] }]
+      responses:
+        {
+          "200": { description: Event updated },
+          "412": { description: Version conflict },
+        }
+  /v1/events/{id}/publication:
+    post:
+      operationId: publishEvent
+      security: [{ bearerAuth: [] }]
+      responses:
+        {
+          "200": { description: Event published },
+          "409": { description: Invalid lifecycle transition },
+        }
+  /v1/events/{id}/cancellations:
+    post:
+      operationId: cancelEvent
+      security: [{ bearerAuth: [] }]
+      responses: { "200": { description: Event cancelled } }
+  /v1/venues:
+    get:
+      {
+        operationId: discoverVenues,
+        parameters:
+          [{ name: city, in: query, required: true, schema: { type: string } }],
+        responses: { "200": { description: Active venues } },
+      }
+    post:
+      {
+        operationId: createVenue,
+        security: [{ bearerAuth: [] }],
+        responses: { "201": { description: Venue created } },
+      }
+  /v1/providers:
+    get:
+      {
+        operationId: discoverProviders,
+        responses: { "200": { description: Verified providers } },
+      }
+    post:
+      {
+        operationId: createProvider,
+        security: [{ bearerAuth: [] }],
+        responses: { "201": { description: Provider created } },
+      }
+  /v1/services:
+    post:
+      {
+        operationId: createProviderService,
+        security: [{ bearerAuth: [] }],
+        responses: { "201": { description: Service created } },
+      }
+  /v1/packages:
+    post:
+      {
+        operationId: createServicePackage,
+        security: [{ bearerAuth: [] }],
+        responses: { "201": { description: Package created } },
+      }
+  /v1/reviews:
+    post:
+      {
+        operationId: submitReview,
+        security: [{ bearerAuth: [] }],
+        responses: { "201": { description: Review submitted } },
+      }
+  /v1/reviews/{reviewId}/replies:
+    post:
+      {
+        operationId: replyToReview,
+        security: [{ bearerAuth: [] }],
+        responses: { "204": { description: Reply created } },
+      }
+  /v1/reviews/{reviewId}/moderation:
+    post:
+      {
+        operationId: moderateReview,
+        security: [{ bearerAuth: [] }],
+        responses:
+          {
+            "204": { description: Moderation state updated },
+            "422": { description: Invalid moderation state },
+          },
+      }
+  /v1/events/{eventId}/media:
+    get:
+      {
+        operationId: listEventMedia,
+        responses:
+          {
+            "200":
+              { description: Event media with expiring signed download URLs },
+          },
+      }
+    post:
+      {
+        operationId: addEventMediaReference,
+        security: [{ bearerAuth: [] }],
+        responses: { "204": { description: Media reference added } },
+      }
+  /v1/events/{eventId}/media-upload-authorizations:
+    post:
+      {
+        operationId: authorizeEventMediaUpload,
+        security: [{ bearerAuth: [] }],
+        responses:
+          {
+            "200": { description: Expiring signed upload URL },
+            "403": { description: Organization ownership denied },
+          },
+      }
+  /v1/providers/{providerId}/portfolio:
+    get:
+      {
+        operationId: listProviderPortfolio,
+        responses:
+          {
+            "200":
+              { description: Portfolio with expiring signed download URLs },
+          },
+      }
+    post:
+      {
+        operationId: addPortfolioReference,
+        security: [{ bearerAuth: [] }],
+        responses: { "204": { description: Portfolio reference added } },
+      }
+  /v1/providers/{providerId}/portfolio-upload-authorizations:
+    post:
+      {
+        operationId: authorizePortfolioUpload,
+        security: [{ bearerAuth: [] }],
+        responses:
+          {
+            "200": { description: Expiring signed upload URL },
+            "403": { description: Organization ownership denied },
+          },
+      }
+  /v1/reviews/{reviewId}/moderation-history:
+    get:
+      {
+        operationId: listReviewModerationHistory,
+        security: [{ bearerAuth: [] }],
+        responses: { "200": { description: Moderation history } },
+      }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }

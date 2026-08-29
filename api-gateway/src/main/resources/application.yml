@@ -1,0 +1,68 @@
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      default-filters:
+        - AddResponseHeader=X-Content-Type-Options,nosniff
+        - AddResponseHeader=X-Frame-Options,DENY
+        - AddResponseHeader=Referrer-Policy,no-referrer
+        - name: RequestRateLimiter
+          args:
+            key-resolver: "#{@authenticatedSubjectKeyResolver}"
+            redis-rate-limiter.replenishRate: ${GATEWAY_RATE_REPLENISH:20}
+            redis-rate-limiter.burstCapacity: ${GATEWAY_RATE_BURST:40}
+            redis-rate-limiter.requestedTokens: 1
+      routes:
+        - id: identity
+          uri: ${IDENTITY_SERVICE_URL:http://localhost:8081}
+          predicates:
+            [
+              "Path=/v1/users/**,/v1/organizations/**,/v1/verification-cases/**,/v1/addresses/**",
+            ]
+        - id: catalog
+          uri: ${CATALOG_SERVICE_URL:http://localhost:8082}
+          predicates:
+            [
+              "Path=/v1/events/**,/v1/venues/**,/v1/providers/**,/v1/services/**,/v1/packages/**,/v1/reviews/**",
+            ]
+        - id: booking
+          uri: ${BOOKING_SERVICE_URL:http://localhost:8083}
+          predicates:
+            [
+              "Path=/v1/seat-holds/**,/v1/ticket-orders/**,/v1/tickets/**,/v1/invitations/**,/v1/service-requests/**,/v1/service-bookings/**,/v1/events/*/check-ins",
+            ]
+        - id: payment
+          uri: ${PAYMENT_SERVICE_URL:http://localhost:8084}
+          predicates:
+            [
+              "Path=/v1/pricing/**,/v1/payment-intents/**,/v1/refunds/**,/v1/payments/**,/v1/settlements/**,/v1/ledger/**,/v1/payouts/**,/v1/coupons/**",
+            ]
+        - id: engagement
+          uri: ${ENGAGEMENT_SERVICE_URL:http://localhost:8085}
+          predicates:
+            [
+              "Path=/v1/notifications/**,/v1/support-cases/**,/v1/disputes/**,/v1/saved-items/**",
+            ]
+  data:
+    redis:
+      url: ${REDIS_URL:redis://localhost:6379}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${OIDC_ISSUER_URI:http://localhost:8180/realms/eventra}
+server:
+  port: ${SERVER_PORT:8080}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+eventra:
+  routes:
+    identity: ${IDENTITY_SERVICE_URL:http://localhost:8081}
+    catalog: ${CATALOG_SERVICE_URL:http://localhost:8082}
+    booking: ${BOOKING_SERVICE_URL:http://localhost:8083}
+    payment: ${PAYMENT_SERVICE_URL:http://localhost:8084}
+    engagement: ${ENGAGEMENT_SERVICE_URL:http://localhost:8085}

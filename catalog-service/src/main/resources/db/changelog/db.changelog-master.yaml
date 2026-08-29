@@ -1,0 +1,17 @@
+databaseChangeLog:
+  - property:
+      name: schemaName
+      value: eventra_catalog
+      dbms: postgresql
+  - changeSet:
+      id: catalog-create-schema
+      author: eventra
+      changes:
+        - sql:
+            sql: CREATE SCHEMA IF NOT EXISTS ${schemaName}
+  - include:
+      file: releases/1.0/db.changelog-1.0.yaml
+      relativeToChangelogFile: true
+  - include:
+      file: releases/1.1/db.changelog-1.1.yaml
+      relativeToChangelogFile: true

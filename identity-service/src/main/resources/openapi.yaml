@@ -1,0 +1,126 @@
+openapi: 3.1.0
+info:
+  title: Eventra Identity API
+  version: 1.0.0
+paths:
+  /v1/users/me:
+    get:
+      {
+        operationId: getCurrentProfile,
+        security: [{ bearerAuth: [] }],
+        responses: { "200": { description: Current profile } },
+      }
+    put:
+      {
+        operationId: updateCurrentProfile,
+        security: [{ bearerAuth: [] }],
+        responses:
+          {
+            "200": { description: Updated profile },
+            "422": { description: Validation failure },
+          },
+      }
+  /v1/users/me/preferences:
+    get:
+      {
+        operationId: getPreferences,
+        security: [{ bearerAuth: [] }],
+        responses: { "200": { description: Preferences } },
+      }
+    put:
+      {
+        operationId: updatePreferences,
+        security: [{ bearerAuth: [] }],
+        responses: { "200": { description: Updated preferences } },
+      }
+  /v1/organizations:
+    post:
+      {
+        operationId: createOrganization,
+        security: [{ bearerAuth: [] }],
+        responses: { "201": { description: Organization created } },
+      }
+  /v1/organizations/{organizationId}/members:
+    post:
+      {
+        operationId: addOrganizationMember,
+        security: [{ bearerAuth: [] }],
+        responses:
+          {
+            "204": { description: Member added },
+            "403": { description: Membership required },
+          },
+      }
+  /v1/users/{userId}/roles:
+    post:
+      {
+        operationId: assignRole,
+        security: [{ bearerAuth: [] }],
+        responses:
+          {
+            "204": { description: Role assigned },
+            "403": { description: Administrator permission required },
+          },
+      }
+  /v1/users/me/verification-cases:
+    get:
+      {
+        operationId: listVerificationCases,
+        security: [{ bearerAuth: [] }],
+        responses: { "200": { description: Verification cases } },
+      }
+    post:
+      {
+        operationId: submitVerificationCase,
+        security: [{ bearerAuth: [] }],
+        responses: { "201": { description: Verification case submitted } },
+      }
+  /v1/users/me/addresses:
+    get:
+      {
+        operationId: listAddresses,
+        security: [{ bearerAuth: [] }],
+        responses: { "200": { description: User addresses } },
+      }
+    post:
+      {
+        operationId: addAddress,
+        security: [{ bearerAuth: [] }],
+        responses: { "201": { description: Address created } },
+      }
+  /v1/verification-cases/{caseId}/documents:
+    get:
+      {
+        operationId: listVerificationDocumentReferences,
+        security: [{ bearerAuth: [] }],
+        responses:
+          {
+            "200":
+              { description: Documents with expiring signed download URLs },
+            "403": { description: Ownership denied },
+          },
+      }
+    post:
+      {
+        operationId: addVerificationDocumentReference,
+        security: [{ bearerAuth: [] }],
+        responses:
+          {
+            "204": { description: Document reference added },
+            "403": { description: Ownership denied },
+          },
+      }
+  /v1/verification-cases/{caseId}/document-upload-authorizations:
+    post:
+      {
+        operationId: authorizeVerificationDocumentUpload,
+        security: [{ bearerAuth: [] }],
+        responses:
+          {
+            "200": { description: Expiring signed upload URL },
+            "403": { description: Ownership denied },
+          },
+      }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }

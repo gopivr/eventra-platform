@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: payment-service
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  datasource:
+    url: ${PAYMENT_DB_URL:jdbc:postgresql://localhost:5432/eventra}
+    username: ${POSTGRES_USER:eventra}
+    password: ${POSTGRES_PASSWORD:eventra_local_only}
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+  kafka.bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+  security.oauth2.resourceserver.jwt.issuer-uri: ${OIDC_ISSUER_URI:http://localhost:8180/realms/eventra}
+server:
+  port: ${SERVER_PORT:8084}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+payment:
+  provider: ${PAYMENT_PROVIDER:sandbox}
+  reconciliation-delay: ${PAYMENT_RECONCILIATION_DELAY:3600000}
+  webhook-secret: ${PAYMENT_WEBHOOK_SECRET:}

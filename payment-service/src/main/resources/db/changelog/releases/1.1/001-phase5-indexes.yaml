@@ -1,0 +1,18 @@
+databaseChangeLog:
+  - changeSet:
+      id: payment-1.1-001-phase5-indexes
+      author: eventra
+      changes:
+        - createIndex:
+            schemaName: ${schemaName}
+            tableName: payout
+            indexName: payout_provider_reference_idx
+            columns:
+              - column: { name: provider_reference }
+        - createIndex:
+            schemaName: ${schemaName}
+            tableName: reconciliation_run
+            indexName: reconciliation_provider_started_idx
+            columns:
+              - column: { name: provider }
+              - column: { name: started_at, descending: true }

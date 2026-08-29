@@ -1,0 +1,12 @@
+databaseChangeLog:
+  - changeSet:
+      id: catalog-1.1-001-review-moderation-history
+      author: eventra
+      changes:
+        - sql:
+            sql: |
+              CREATE TABLE ${schemaName}.review_moderation_history (id UUID PRIMARY KEY, review_id UUID NOT NULL REFERENCES ${schemaName}.review(id), from_state VARCHAR(30), to_state VARCHAR(30) NOT NULL, moderator_subject VARCHAR(255) NOT NULL, changed_at TIMESTAMP WITH TIME ZONE NOT NULL);
+              CREATE INDEX review_moderation_history_review_idx ON ${schemaName}.review_moderation_history(review_id, changed_at DESC);
+      rollback:
+        - sql:
+            sql: DROP TABLE IF EXISTS ${schemaName}.review_moderation_history;

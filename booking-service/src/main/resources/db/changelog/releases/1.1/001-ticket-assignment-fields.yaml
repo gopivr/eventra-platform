@@ -1,0 +1,16 @@
+databaseChangeLog:
+  - changeSet:
+      id: booking-1.1-001-ticket-assignment-fields
+      author: eventra
+      changes:
+        - dropNotNullConstraint:
+            schemaName: ${schemaName}
+            tableName: ticket
+            columnName: order_item_id
+            columnDataType: UUID
+        - addColumn:
+            schemaName: ${schemaName}
+            tableName: ticket
+            columns:
+              - column: { name: assignee_user_id, type: UUID }
+              - column: { name: assignee_name, type: VARCHAR(200) }

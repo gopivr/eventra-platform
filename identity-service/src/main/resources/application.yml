@@ -1,0 +1,12 @@
+spring:
+  application.name: identity-service
+  jpa.hibernate.ddl-auto: validate
+  datasource:
+    url: ${IDENTITY_DB_URL:jdbc:postgresql://localhost:5432/eventra}
+    username: ${POSTGRES_USER:eventra}
+    password: ${POSTGRES_PASSWORD:eventra_local_only}
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+  security.oauth2.resourceserver.jwt.issuer-uri: ${OIDC_ISSUER_URI:http://localhost:8180/realms/eventra}
+server.port: ${SERVER_PORT:8081}
+management.endpoints.web.exposure.include: health,info

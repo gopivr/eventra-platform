@@ -1,0 +1,126 @@
+openapi: 3.1.0
+info: { title: Eventra Engagement API, version: 1.0.0 }
+paths:
+  /v1/notifications:
+    {
+      get:
+        {
+          operationId: listNotifications,
+          security: [{ bearerAuth: [] }],
+          responses: { "200": { description: Notifications } },
+        },
+    }
+  /v1/notifications/{id}/read:
+    {
+      post:
+        {
+          operationId: markNotificationRead,
+          security: [{ bearerAuth: [] }],
+          responses: { "204": { description: Notification marked read } },
+        },
+    }
+  /v1/saved-items:
+    {
+      get:
+        {
+          operationId: listSavedItems,
+          security: [{ bearerAuth: [] }],
+          responses: { "200": { description: Saved items } },
+        },
+      post:
+        {
+          operationId: saveItem,
+          security: [{ bearerAuth: [] }],
+          responses: { "204": { description: Item saved } },
+        },
+    }
+  /v1/saved-items/{itemType}/{itemId}:
+    {
+      delete:
+        {
+          operationId: unsaveItem,
+          security: [{ bearerAuth: [] }],
+          responses: { "204": { description: Item unsaved } },
+        },
+    }
+  /v1/support-cases:
+    {
+      get:
+        {
+          operationId: listSupportCases,
+          security: [{ bearerAuth: [] }],
+          responses: { "200": { description: Support cases } },
+        },
+      post:
+        {
+          operationId: createSupportCase,
+          security: [{ bearerAuth: [] }],
+          responses: { "201": { description: Case created } },
+        },
+    }
+  /v1/support-cases/{id}/messages:
+    {
+      get:
+        {
+          operationId: listSupportMessages,
+          security: [{ bearerAuth: [] }],
+          responses:
+            {
+              "200": { description: Case messages },
+              "403": { description: Case owner required },
+            },
+        },
+      post:
+        {
+          operationId: addSupportMessage,
+          security: [{ bearerAuth: [] }],
+          responses:
+            {
+              "201": { description: Message added },
+              "403": { description: Case owner required },
+            },
+        },
+    }
+  /v1/disputes:
+    {
+      get:
+        {
+          operationId: listDisputes,
+          security: [{ bearerAuth: [] }],
+          responses: { "200": { description: Disputes } },
+        },
+      post:
+        {
+          operationId: createDispute,
+          security: [{ bearerAuth: [] }],
+          responses: { "201": { description: Dispute created } },
+        },
+    }
+  /v1/disputes/{id}/evidence:
+    {
+      get:
+        {
+          operationId: listDisputeEvidence,
+          security: [{ bearerAuth: [] }],
+          responses:
+            {
+              "200": { description: Evidence references },
+              "403": { description: Dispute owner required },
+            },
+        },
+      post:
+        {
+          operationId: addDisputeEvidence,
+          security: [{ bearerAuth: [] }],
+          responses:
+            {
+              "201": { description: Evidence reference added },
+              "403": { description: Dispute owner required },
+            },
+        },
+    }
+components:
+  {
+    securitySchemes:
+      { bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT } },
+  }
